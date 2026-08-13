@@ -48,6 +48,7 @@ func _save_to(path: String) -> void:
 			"items": Inventory.items.duplicate(),
 			"equipped": Inventory.equipped,
 			"hotbar": Inventory.hotbar.duplicate(),
+			"backpack": Inventory.backpack,  # 16 格背包（数组，JSON 可直接序列化）
 		},
 		"class": PlayerClass.to_save(),
 		"buildables": _collect_buildables(),
@@ -150,6 +151,8 @@ func _apply_load(data: Variant, keep_inventory: bool) -> void:
 		Inventory.items = (data.inventory.items as Dictionary).duplicate()
 		Inventory.equipped = data.inventory.equipped
 		Inventory.hotbar = (data.inventory.get("hotbar", ["", "", "", "", ""]) as Array).duplicate()
+		# 16 格背包：新存档直接还原，旧存档（无该字段）从 items 字典自动迁移
+		Inventory.restore_backpack(data.inventory.get("backpack", []))
 		Inventory.equipped_slot = Inventory.hotbar.find(Inventory.equipped)
 		if Inventory.equipped_slot < 0:
 			Inventory.equipped_slot = 0

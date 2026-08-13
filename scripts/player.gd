@@ -314,9 +314,11 @@ func _try_gather() -> void:
 		# 勘探者·采集大师：采集产出 +20%/级
 		var bonus := 1.0 + 0.2 * PlayerClass.skill_level("gatherer")
 		var amount := maxi(1, int(round(float(result.amount) * bonus)))
-		Inventory.add_item(result.resource_id, amount)
-		AudioManager.play_sfx("gather")
-		best.queue_free()
+		if Inventory.add_item(result.resource_id, amount):
+			AudioManager.play_sfx("gather")
+			best.queue_free()  # 装进背包才消耗资源点；背包满时资源点留在原地
+		else:
+			SaveManager.toast.emit("背包已满，装不下了")
 
 
 ## 在指定组里找离玩家最近的节点，超过 max_dist 视为不在旁边
@@ -425,10 +427,7 @@ func _drop_inventory() -> void:
 	bag.items = Inventory.items.duplicate()
 	bag.global_position = global_position
 	get_parent().add_child(bag)
-	Inventory.items.clear()
-	Inventory.equipped = ""
-	Inventory.changed.emit()
-	Inventory.equipped_changed.emit()
+	Inventory.clear_all()  # 清空 16 格背包 + 装备栏
 
 
 func respawn() -> void:
@@ -581,7 +580,9 @@ func _salvage_refund(buildable: Node) -> void:
 	for id in blueprint.get("cost", {}):
 		var refund := int(round(float(blueprint.cost[id]) * salvage))
 		if refund > 0:
-			Inventory.add_item(id, refund)
+			if not Inventory.add_item(id, refund):
+				Inventory.drop_on_ground(id, refund, global_position)
+				SaveManager.toast.emit("背包已满，部分回收材料掉在地上")
 
 
 ## 职业被动加成实时应用：强健(生命上限)/顽强(复活延迟)/巧手(建造范围)/鹰眼(视野)

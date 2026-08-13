@@ -138,7 +138,8 @@ func _solve() -> void:
 	if linked_keypad != null and linked_keypad.has_method("reveal_code"):
 		linked_keypad.reveal_code()
 	for id in REWARDS:
-		Inventory.add_item(id, REWARDS[id])
+		if not Inventory.add_item(id, REWARDS[id]):
+			Inventory.drop_on_ground(id, REWARDS[id], global_position)
 	SaveManager.toast.emit("遗迹装置被唤醒！获得符文石×2、零件×1")
 	_refresh_visual()
 

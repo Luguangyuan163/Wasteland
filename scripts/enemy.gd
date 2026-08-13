@@ -238,7 +238,9 @@ func _die() -> void:
 	AudioManager.play_sfx("enemy_die")
 	var drops: Dictionary = ENEMY_TYPES[enemy_type].drops
 	for id in drops:
-		Inventory.add_item(id, drops[id])
+		if not Inventory.add_item(id, drops[id]):
+			Inventory.drop_on_ground(id, drops[id], global_position)
+			SaveManager.toast.emit("背包已满，部分掉落留在原地")
 	# P3 职业系统：击杀奖励技能点（大Boss +2 / 小Boss +1 / 普通怪每 10 只 +1）
 	PlayerClass.on_enemy_killed(ENEMY_TYPES[enemy_type].get("type", "普通"))
 	queue_free()

@@ -87,7 +87,8 @@ func _solve() -> void:
 	if linked_door != null and linked_door.has_method("set_open"):
 		linked_door.set_open(true)
 	for id in REWARDS:
-		Inventory.add_item(id, REWARDS[id])
+		if not Inventory.add_item(id, REWARDS[id]):
+			Inventory.drop_on_ground(id, REWARDS[id], global_position)
 	SaveManager.toast.emit("密码正确！遗迹宝库开启，获得古物×2、宝石×1、零件×2")
 	if _panel != null:
 		_panel.close()

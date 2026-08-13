@@ -12,6 +12,7 @@ const SKILL_PANEL_SCENE := preload("res://scenes/skill_panel.tscn")
 @onready var _toast: Label = $Toast
 @onready var _equip_panel: Control = $EquipPanel
 @onready var _dark_overlay: ColorRect = $DarkOverlay
+@onready var _backpack_panel: Control = $BackpackPanel
 
 var _player = null  # 不写死类型：hp/max_hp 是玩家的自定义属性
 var _toast_time := 0.0
@@ -25,6 +26,7 @@ var _dark_label: Label = null
 func _ready() -> void:
 	Inventory.changed.connect(_refresh)
 	Inventory.changed.connect(_refresh_hotbar)  # 物品数量变化也要刷新装备栏
+	Inventory.changed.connect(_refresh_backpack)  # 背包面板打开时实时刷新
 	Inventory.hotbar_changed.connect(_refresh_hotbar)
 	Inventory.equipped_changed.connect(_refresh_hotbar)
 	Inventory.equipped_changed.connect(_refresh_attack_hint)
@@ -40,6 +42,7 @@ func _ready() -> void:
 		_refresh_health()
 	SaveManager.toast.connect(_on_toast)
 	_setup_equip_panel()
+	_setup_backpack_panel()
 	# P3 职业系统：左上角显示职业与技能点，K 打开技能树
 	PlayerClass.changed.connect(_refresh_class_label)
 	_class_label = Label.new()
@@ -72,17 +75,29 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.physical_keycode == KEY_C:
 			if _skill_panel.visible:
 				_skill_panel.close()
-			else:
-				_toggle_equip_panel()
+			if _backpack_panel.visible:
+				_backpack_panel.visible = false
+			_toggle_equip_panel()
+		elif event.physical_keycode == KEY_I:
+			if _skill_panel.visible:
+				_skill_panel.close()
+			if _equip_panel.visible:
+				_equip_panel.visible = false
+			_toggle_backpack()
 		elif event.physical_keycode == KEY_K:
 			if _equip_panel.visible:
 				_equip_panel.visible = false
+			if _backpack_panel.visible:
+				_backpack_panel.visible = false
 			if _skill_panel.visible:
 				_skill_panel.close()
 			else:
 				_skill_panel.open()
 		elif event.physical_keycode == KEY_ESCAPE:
-			if _skill_panel.visible:
+			if _backpack_panel.visible:
+				_backpack_panel.visible = false
+				get_viewport().set_input_as_handled()
+			elif _skill_panel.visible:
 				_skill_panel.close()
 				get_viewport().set_input_as_handled()
 			elif _equip_panel.visible:
@@ -91,10 +106,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _refresh() -> void:
-	var parts: Array[String] = []
-	for id in Inventory.items:
-		parts.append("%s ×%d" % [Inventory.NAMES.get(id, id), Inventory.items[id]])
-	_label.text = "   ".join(parts) if not parts.is_empty() else "背包：空（靠近树或矿石按 E 采集）"
+	# 背包内容只在打开背包面板时完整展示，平时只显示已用格数
+	_label.text = "背包 %d/%d　按 I 打开" % [Inventory.filled_slots(), Inventory.BACKPACK_SIZE]
 
 
 func _refresh_health() -> void:
@@ -204,10 +217,10 @@ func _refresh_attack_hint() -> void:
 	var weapon_name := "徒手" if Inventory.equipped == "" else str(Inventory.NAMES.get(Inventory.equipped, Inventory.equipped))
 	if weapon.is_empty():
 		var extra := "（照明，扩大视野）" if Inventory.equipped == "torch" else ""
-		_attack_hint.text = "左键：攻击（当前装备：%s%s，1 伤害）　C 装备栏　F5 保存 / F9 读取" % [weapon_name, extra]
+		_attack_hint.text = "左键：攻击（当前装备：%s%s，1 伤害）　I 背包　C 装备栏　F5 保存 / F9 读取" % [weapon_name, extra]
 		return
 	var kind := "范围" if weapon.get("area", false) else "单体"
-	_attack_hint.text = "左键：攻击（当前装备：%s，%d 伤害 %s）　C 装备栏　F5 保存 / F9 读取" % [weapon_name, weapon.get("damage", 1), kind]
+	_attack_hint.text = "左键：攻击（当前装备：%s，%d 伤害 %s）　I 背包　C 装备栏　F5 保存 / F9 读取" % [weapon_name, weapon.get("damage", 1), kind]
 
 
 ## 装备栏管理面板：按 C 打开；点槽位选中，点背包物品放入，再点选中槽位清除
@@ -225,6 +238,38 @@ func _setup_equip_panel() -> void:
 		button.pressed.connect(_on_equip_slot_pressed.bind(i))
 		slots.add_child(button)
 	_equip_panel.get_node("VBox/CloseHint").text = "按 C 或 Esc 关闭"
+
+
+## 背包面板：按 I 打开，4×4 共 16 格，只读展示全部物品（装备分配仍走 C 装备栏）
+func _setup_backpack_panel() -> void:
+	var grid := _backpack_panel.get_node("VBox/Grid") as GridContainer
+	for i in Inventory.BACKPACK_SIZE:
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(76, 44)
+		button.disabled = true
+		grid.add_child(button)
+	_backpack_panel.get_node("VBox/CloseHint").text = "按 I 或 Esc 关闭"
+
+
+func _toggle_backpack() -> void:
+	AudioManager.play_sfx("ui_click")
+	_backpack_panel.visible = not _backpack_panel.visible
+	if _backpack_panel.visible:
+		_refresh_backpack()
+
+
+## 刷新 16 格显示：每格 = 物品名 ×数量，空格显示序号+空
+func _refresh_backpack() -> void:
+	if _backpack_panel == null:
+		return
+	var grid := _backpack_panel.get_node("VBox/Grid") as GridContainer
+	for i in Inventory.BACKPACK_SIZE:
+		var button: Button = grid.get_child(i)
+		var slot: Variant = Inventory.backpack[i]
+		if slot is Dictionary:
+			button.text = "%s ×%d" % [Inventory.NAMES.get(slot.id, slot.id), slot.count]
+		else:
+			button.text = "%d 空" % (i + 1)
 
 
 func _on_equip_slot_pressed(i: int) -> void:

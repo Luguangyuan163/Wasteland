@@ -27,11 +27,19 @@ func _on_body_exited(body: Node) -> void:
 ## 玩家调用：把掉落物全部转回背包，然后消失
 func pick_up() -> void:
 	AudioManager.play_sfx("pickup")
+	var remaining := {}
 	for id in items:
-		Inventory.add_item(id, items[id])
-	items.clear()
-	SaveManager.toast.emit("捡回了掉落物品")
-	queue_free()
+		if not Inventory.add_item(id, items[id]):
+			remaining[id] = items[id]
+	if remaining.is_empty():
+		items.clear()
+		SaveManager.toast.emit("捡回了掉落物品")
+		queue_free()
+	else:
+		# 背包满：没装下的留在包里，之后腾出空间再回来捡
+		items = remaining
+		_hint.text = "按 E 拾取：" + _summary()
+		SaveManager.toast.emit("背包已满，部分物品没能捡回")
 
 
 func _summary() -> String:

@@ -89,7 +89,8 @@ func _check_solved() -> void:
 	for p in get_tree().get_nodes_in_group("power_pipes"):
 		p._solved = true
 	for id in REWARDS:
-		Inventory.add_item(id, REWARDS[id])
+		if not Inventory.add_item(id, REWARDS[id]):
+			Inventory.drop_on_ground(id, REWARDS[id], global_position)
 	AudioManager.play_sfx("craft")  # 奖励达成提示音
 	SaveManager.toast.emit("能量管道接通！获得奖励：铁矿石×2、石头×2")
 

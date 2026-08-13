@@ -54,6 +54,10 @@ func craft(recipe_id: String) -> bool:
 		if Inventory.get_count(id) < recipe.cost[id]:
 			AudioManager.play_sfx("craft_fail")  # 材料不够：播放失败音
 			return false  # 材料不够，什么都不发生
+	if not Inventory.can_add(recipe.product):
+		AudioManager.play_sfx("craft_fail")
+		SaveManager.toast.emit("背包已满，做不了新东西")
+		return false
 	for id in recipe.cost:
 		Inventory.spend_item(id, recipe.cost[id])
 	Inventory.add_item(recipe.product, recipe.amount)
