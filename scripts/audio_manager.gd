@@ -31,6 +31,13 @@ const SFX_VOLUME_DB := {
 	"keypad_beep": -8.0,
 	"puzzle_ok": -6.0,
 	"puzzle_fail": -8.0,
+	"enemy_idle": -14.0,
+	"enemy_aggro": -5.0,
+	"enemy_attack": -7.0,
+	"anomaly_whisper": -12.0,
+	"anomaly_shadow": -10.0,
+	"anomaly_flicker": -8.0,
+	"dark_heart": -8.0,
 	"pickup": -6.0,
 	"save": -8.0,
 	"load": -8.0,
@@ -134,6 +141,14 @@ func _build_stream(id: String) -> PackedFloat32Array:
 		"keypad_beep": return _concat([_tone(rng, 880.0, 0.05, 0.28, 0.05)])
 		"puzzle_ok": return _concat([_tone(rng, 659.0, 0.10, 0.26, 0.0), _tone(rng, 988.0, 0.14, 0.26, 0.0)])
 		"puzzle_fail": return _concat([_tone(rng, 150.0, 0.18, 0.30, 0.25)])
+		# ── P3 恐怖氛围音效：程序化合成，P4 统一替换 CC0 素材 ──
+		"enemy_idle": return _concat([_sweep(rng, 90.0, 60.0, 0.45, 0.18, 0.55), _noise(rng, 0.08, 0.12)])
+		"enemy_aggro": return _sweep(rng, 140.0, 320.0, 0.35, 0.30, 0.55)
+		"enemy_attack": return _concat([_noise(rng, 0.12, 0.25), _sweep(rng, 260.0, 120.0, 0.10, 0.25, 0.40)])
+		"anomaly_whisper": return _concat([_noise(rng, 0.35, 0.10), _sweep(rng, 700.0, 500.0, 0.50, 0.10, 0.60)])
+		"anomaly_shadow": return _sweep(rng, 80.0, 40.0, 0.55, 0.22, 0.45)
+		"anomaly_flicker": return _concat([_tone(rng, 1050.0, 0.06, 0.22, 0.10), _tone(rng, 880.0, 0.05, 0.20, 0.10), _tone(rng, 990.0, 0.05, 0.20, 0.10)])
+		"dark_heart": return _concat([_tone(rng, 62.0, 0.16, 0.34, 0.0), _tone(rng, 58.0, 0.14, 0.30, 0.0)])
 		"pickup": return _concat([_tone(rng, 660.0, 0.06, 0.24, 0.0), _tone(rng, 990.0, 0.10, 0.24, 0.0)])
 		"save": return _concat([_tone(rng, 880.0, 0.06, 0.22, 0.0), _tone(rng, 1320.0, 0.09, 0.22, 0.0)])
 		"load": return _concat([_tone(rng, 660.0, 0.06, 0.22, 0.0), _tone(rng, 990.0, 0.09, 0.22, 0.0)])

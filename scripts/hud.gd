@@ -11,12 +11,15 @@ const SKILL_PANEL_SCENE := preload("res://scenes/skill_panel.tscn")
 @onready var _attack_hint: Label = $AttackHint
 @onready var _toast: Label = $Toast
 @onready var _equip_panel: Control = $EquipPanel
+@onready var _dark_overlay: ColorRect = $DarkOverlay
 
 var _player = null  # 不写死类型：hp/max_hp 是玩家的自定义属性
 var _toast_time := 0.0
 var _selected_slot := 0  # 装备栏管理面板里当前选中的槽位
 var _skill_panel: Control = null
 var _class_label: Label = null
+var _dark_bar: ProgressBar = null
+var _dark_label: Label = null
 
 
 func _ready() -> void:
@@ -33,6 +36,7 @@ func _ready() -> void:
 		_player.health_changed.connect(_refresh_health)
 		_player.died.connect(_on_player_died)
 		_player.respawned.connect(_on_player_respawned)
+		_player.darkness_changed.connect(_refresh_dark)
 		_refresh_health()
 	SaveManager.toast.connect(_on_toast)
 	_setup_equip_panel()
@@ -47,6 +51,8 @@ func _ready() -> void:
 	_class_label.add_theme_font_size_override("font_size", 15)
 	add_child(_class_label)
 	_refresh_class_label()
+	_setup_dark_ui()
+	_refresh_dark()
 	_skill_panel = SKILL_PANEL_SCENE.instantiate()
 	add_child(_skill_panel)
 	TutorialHints.show_first_time("class", "职业技能：按 K 打开技能树，击杀 BOSS 可获得技能点")
@@ -107,6 +113,51 @@ func _refresh_class_label() -> void:
 		_class_label.text = "职业技能：按 K 查看（主菜单新游戏时选择职业）"
 	else:
 		_class_label.text = "%s　技能点 %d　按 K 打开技能树" % [def.get("name", "?"), PlayerClass.skill_points]
+
+
+## 黑暗侵蚀指示条：左上角职业栏下方，只有黑暗值 > 0 时显示
+func _setup_dark_ui() -> void:
+	_dark_bar = ProgressBar.new()
+	_dark_bar.offset_left = 16.0
+	_dark_bar.offset_top = 116.0
+	_dark_bar.offset_right = 176.0
+	_dark_bar.offset_bottom = 132.0
+	_dark_bar.max_value = 100.0
+	_dark_bar.show_percentage = false
+	_dark_bar.add_theme_stylebox_override("fill", _dark_style(Color(0.45, 0.1, 0.5)))
+	_dark_bar.add_theme_stylebox_override("background", _dark_style(Color(0.05, 0.05, 0.08)))
+	add_child(_dark_bar)
+	_dark_label = Label.new()
+	_dark_label.offset_left = 180.0
+	_dark_label.offset_top = 112.0
+	_dark_label.offset_right = 340.0
+	_dark_label.offset_bottom = 134.0
+	_dark_label.add_theme_color_override("font_color", Color(0.75, 0.6, 0.8))
+	_dark_label.add_theme_font_size_override("font_size", 13)
+	_dark_label.text = "黑暗侵蚀"
+	add_child(_dark_label)
+
+
+func _dark_style(color: Color) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = color
+	return sb
+
+
+## 黑暗值 → 屏幕边缘晕影 + 侵蚀条（满值前火把是唯一对策）
+func _refresh_dark() -> void:
+	if _player == null:
+		return
+	var exposure := float(_player.dark_exposure)
+	var alpha := clampf(exposure / 100.0 * 0.45, 0.0, 0.45)
+	_dark_overlay.color = Color(0, 0, 0, alpha)
+	if _dark_bar != null:
+		_dark_bar.value = exposure
+		var show := exposure > 0.5
+		_dark_bar.visible = show
+		_dark_label.visible = show
+		if show:
+			_dark_label.text = "黑暗侵蚀 %d%%" % int(exposure)
 
 
 func _on_player_died() -> void:

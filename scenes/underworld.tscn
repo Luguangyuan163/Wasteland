@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="3_hud"]
 [ext_resource type="Script" path="res://scripts/underworld.gd" id="4_under"]
 [ext_resource type="Script" path="res://scripts/spawn_manager.gd" id="5_spawn"]
+[ext_resource type="Script" path="res://scripts/anomaly_manager.gd" id="6_anomaly"]
 
 [node name="Underworld" type="Node2D"]
 script = ExtResource("4_under")
@@ -29,3 +30,6 @@ hub_radius = 128.0
 grace_duration = 30.0
 require_darkness = false
 biome_aware = false
+
+[node name="AnomalyManager" type="Node2D" parent="."]
+script = ExtResource("6_anomaly")

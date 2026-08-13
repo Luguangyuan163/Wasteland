@@ -25,10 +25,15 @@ const TORCH_COLOR := Color(1.0, 0.68, 0.32)  # 火把暖橙光（更接近火焰
 const LIGHT_TEXTURE_RADIUS := 128.0  # 点光源贴图 256px 的一半：视野半径 = 贴图半径 × 缩放
 const UNSTUCK_DELAY := 2.5     # 按住移动键但持续被卡住的秒数 → 自动脱困
 const UNSTUCK_RADIUS := 4      # 脱困搜索半径（格）
+const DARK_GAIN := 2.0         # 黑暗值上涨速度（%/秒）：约 50 秒到满
+const DARK_REGAIN := 12.5      # 黑暗值恢复速度（%/秒）：火把/离开黑暗约 8 秒清空
+const DARK_DAMAGE_INTERVAL := 2.0  # 黑暗值满时的扣血间隔（秒）
+const DARK_SPEED_THRESHOLD := 50.0  # 黑暗值超过该值开始减速
 
 signal health_changed  # 生命变化时通知 HUD 刷新
 signal died            # 死亡时通知 HUD / 波次系统
 signal respawned       # 重生完成时通知 HUD
+signal darkness_changed  # 黑暗值变化时通知 HUD（恐怖氛围的侵蚀条）
 
 @export var move_speed: float = 400.0
 @export var gather_radius: float = 64.0
@@ -50,6 +55,8 @@ var _half_cone_dot := 0.5  # 扇形半角余弦，_ready 里按 ATTACK_CONE_DEG 
 var vision_radius := 0.0  # 黑暗群系中的视野半径（px），_update_light 里按装备更新；怪物索敌用
 var _blocked_time := 0.0   # 连续被卡住的时间（秒），超时自动转移到附近空地
 var _regen_acc := 0.0      # 医师·再生的分数生命累加器
+var dark_exposure := 0.0   # 黑暗值 0~100：黑暗区域无火把时上升，满值开始掉血
+var _dark_damage_acc := 0.0
 @onready var _light: PointLight2D = $PointLight2D
 
 
@@ -104,6 +111,8 @@ func _physics_process(delta: float) -> void:
 			hp = mini(max_hp, hp + gain)
 			if hp != prev:
 				health_changed.emit()
+	# 黑暗惩罚：黑暗区域无火把 → 黑暗值上升，满值掉血（恐怖氛围机制）
+	_update_darkness(delta)
 
 	# 2. 交互（采集 / 制作）
 	if Input.is_action_just_pressed("interact"):
@@ -425,6 +434,8 @@ func _drop_inventory() -> void:
 func respawn() -> void:
 	dead = false
 	hp = max_hp
+	dark_exposure = 0.0  # 重生回到出生点（明亮地表），黑暗侵蚀清空
+	darkness_changed.emit()
 	AudioManager.play_sfx("respawn")
 	global_position = spawn_position
 	modulate = Color(1, 1, 1)
@@ -509,9 +520,49 @@ func _update_light() -> void:
 		vision_radius = NO_TORCH_SCALE * LIGHT_TEXTURE_RADIUS * eagle
 
 
+## 当前是否身处黑暗区域：地表暗域等"is_dark"群系，或地心这类无地表判定的独立黑暗场景
+func is_in_dark_area() -> bool:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return false
+	if scene.has_method("is_in_dark_zone"):
+		return scene.is_in_dark_zone(global_position)
+	return true  # 地心世界等独立场景：全图黑暗
+
+
+## 黑暗惩罚：黑暗区域 + 未装备火把 → 黑暗值上涨；装备火把/离开黑暗 → 快速恢复。
+## 黑暗值 50+ 减速、100 时每 2 秒掉 1 血（对应手册"黑暗惩罚机制"，火把是核心对策）
+func _update_darkness(delta: float) -> void:
+	var in_dark := is_in_dark_area()
+	var has_torch := Inventory.equipped == "torch"
+	var prev := dark_exposure
+	if in_dark and not has_torch:
+		dark_exposure = minf(100.0, dark_exposure + delta * DARK_GAIN)
+	else:
+		dark_exposure = maxf(0.0, dark_exposure - delta * DARK_REGAIN)
+	if dark_exposure != prev:
+		darkness_changed.emit()
+	# 进入 50/100 的临界点播一次低语，提示"黑暗正在逼近"
+	if prev < DARK_SPEED_THRESHOLD and dark_exposure >= DARK_SPEED_THRESHOLD:
+		AudioManager.play_sfx("anomaly_whisper")
+	if prev < 100.0 and dark_exposure >= 100.0:
+		AudioManager.play_sfx("anomaly_whisper")
+	# 满值惩罚：持续扣血（医师·再生可以抵消；火把或离开黑暗后自动停止）
+	if dark_exposure >= 100.0 and not dead:
+		_dark_damage_acc += delta
+		if _dark_damage_acc >= DARK_DAMAGE_INTERVAL:
+			_dark_damage_acc = 0.0
+			AudioManager.play_sfx("dark_heart")
+			take_damage(1)
+
+
 ## 勘探者·疾行：移动速度 +8%/级
 func _effective_move_speed() -> float:
-	return move_speed * (1.0 + 0.08 * PlayerClass.skill_level("swift"))
+	var speed := move_speed * (1.0 + 0.08 * PlayerClass.skill_level("swift"))
+	# 黑暗值 ≥50：黑暗侵蚀让双腿发沉，移速 -10%
+	if dark_exposure >= DARK_SPEED_THRESHOLD:
+		speed *= 0.9
+	return speed
 
 
 ## 工程师·节俭：按折扣计算单项建造消耗（最低 1 个）

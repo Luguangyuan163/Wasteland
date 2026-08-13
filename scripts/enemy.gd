@@ -121,6 +121,8 @@ var damage := 5
 var move_speed := 100.0
 var hp := 3
 var attack_cd := 0.0
+var _was_chasing := false  # 上一帧是否在追击（用于首次发现时播示警音）
+var _idle_cd := 6.0        # 待机低吼倒计时
 var _player = null  # 不写死类型：take_damage 是玩家的自定义方法，动态调用
 @onready var _health_bar: Node2D = $HealthBar
 @onready var _health_fill: ColorRect = $HealthBar/Fill
@@ -141,6 +143,7 @@ func _ready() -> void:
 	$NameLabel.modulate = TYPE_COLORS.get(t.get("type", "普通"), Color(1, 1, 1))
 	$NameLabel.scale = Vector2.ONE / t.scale
 	_player = get_tree().get_first_node_in_group("player")
+	_idle_cd = randf_range(4.0, 10.0)
 	_update_health_bar()
 
 
@@ -162,9 +165,19 @@ func _physics_process(delta: float) -> void:
 		# 停靠时不要调用 move_and_slide：Godot 会把“每帧执行 move_and_slide 的静止
 		# KinematicBody”当作活动体，玩家碰到它后会被玩家物理以同速拖着走
 		# （即“背着怪物”bug）。停住时不参与物理更新即可彻底避免。
+	# 恐怖音效：首次发现玩家 → 示警吼叫；待机时偶尔低沉咕噜（玩家附近才播）
+	var chasing := player_sees_me and can_see and dist > attack_range
+	if chasing and not _was_chasing:
+		AudioManager.play_sfx("enemy_aggro")
+	_was_chasing = chasing
+	_idle_cd -= delta
+	if not chasing and _idle_cd <= 0.0 and dist <= 700.0:
+		AudioManager.play_sfx("enemy_idle")
+		_idle_cd = randf_range(6.0, 15.0)
 	# 攻击：玩家视野内、攻击距离内且有视线（隔墙不打）
 	if player_sees_me and dist <= attack_range and can_see and attack_cd <= 0.0:
 		attack_cd = attack_cooldown
+		AudioManager.play_sfx("enemy_attack")
 		_player.take_damage(damage)
 	_update_label_visibility()
 
