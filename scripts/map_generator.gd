@@ -20,6 +20,9 @@ const RESOURCE_SCENE := preload("res://scenes/resource_node.tscn")
 const DOOR_SCENE := preload("res://scenes/door.tscn")
 const PLATE_SCENE := preload("res://scenes/pressure_plate.tscn")
 const PIPE_SCENE := preload("res://scenes/power_pipe.tscn")
+const KEYPAD_SCENE := preload("res://scenes/keypad_lock.tscn")
+const RELIC_SCENE := preload("res://scenes/relic_device.tscn")
+const ALTAR_SCENE := preload("res://scenes/twin_altar.tscn")
 const PORTAL_SCENE := preload("res://scenes/portal.tscn")
 const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 const WORKBENCH_SCENE := preload("res://scenes/workbench.tscn")
@@ -55,6 +58,12 @@ const PUZZLE_SIZE := Vector2i(5, 6)
 const DOORWAY_OFFSETS := [Vector2i(-1, 1), Vector2i(0, 1), Vector2i(-1, 2), Vector2i(0, 2), Vector2i(-1, 3), Vector2i(0, 3)]
 const PLATE_OFFSET := Vector2i(-2, 2)
 const PIPE_OFFSETS := [Vector2i(-17, 4), Vector2i(-16, 4), Vector2i(-15, 4), Vector2i(-14, 4)]
+
+## 解谜扩展（P3）：遗迹密室（密码锁 + 遗迹装置 联动）与双子机关碑（联动谜题 2）
+const RELIC_ROOM_SIZE := Vector2i(7, 6)   # 遗迹密室尺寸（含墙）
+const RELIC_DOORWAY_OFFSETS := [Vector2i(2, -1), Vector2i(3, -1), Vector2i(2, 0), Vector2i(3, 0), Vector2i(2, 1), Vector2i(3, 1)]
+const RELIC_MIN_DIST := 22.0  # 遗迹密室离出生点距离（格），比压力板谜题更远一点
+const RELIC_MAX_DIST := 34.0
 
 ## 怪物聚集地模板：7×7 竞技场，大 Boss + 精英守卫
 const HUB_RADIUS := 3
@@ -131,6 +140,11 @@ var _road_segments_ok := 0                # 成功连通的路径段数
 
 var map_seed := 0
 var _pipes: Array = []  # 本局能量管道节点（读档时按此恢复状态）
+var relic_anchor := Vector2i(112, 60)   # 遗迹密室锚点（左上角，由种子决定）
+var altar_a_cell := Vector2i(106, 63)   # 双子碑 A（先激活）
+var altar_b_cell := Vector2i(116, 68)   # 双子碑 B（后激活）
+var _relic_code := "000"                # 本局密码锁密码（种子决定，读档可复现）
+var _relic_sequence: Array = [0, 1, 2, 3]  # 本局遗迹装置符文顺序
 var _rng := RandomNumberGenerator.new()
 var _ground: TileMapLayer = null
 var _biome_grid: Array[String] = []  ## 群系缓存（200×150 一维数组，行优先 [y*MAP_W + x]；供验证/调试与后续系统读取）
@@ -158,13 +172,13 @@ func _ready() -> void:
 		light.energy = 0.0
 	var info := SaveManager.consume_pending_load()
 	if info.is_empty():
-		SaveManager.toast.emit("探索废土：踩压力板开门、转动管道接通，找到传送门可进入地心世界")
+		SaveManager.toast.emit("探索废土：踩压力板开门、转动管道接通；遗迹密室藏着密码锁，先激活遗迹装置")
 	else:
 		SaveManager.load_game_from(info.path, info.keep_inventory)  # 从地心返回 读档到地表时恢复状态 
 
 ## 生成地图：清空旧的，铺瓦片，放资源
 ## saved_resources 为空则随机分布；读档时传入存档的资源列表（保持采集状态）
-func generate(seed_value: int, saved_resources: Array = [], saved_pipes: Array = []) -> void:
+func generate(seed_value: int, saved_resources: Array = [], saved_pipes: Array = [], saved_puzzles: Array = []) -> void:
 	map_seed = seed_value
 	_rng.seed = seed_value
 	# 重置会参与 _build_tiles 避让判断的状态：否则第二次生成会残留上一次的谜题/巢穴格子，
@@ -175,7 +189,9 @@ func generate(seed_value: int, saved_resources: Array = [], saved_pipes: Array =
 	for node in get_tree().get_nodes_in_group("resource_nodes"):
 		node.queue_free()
 	# 清掉旧谜题实体（门/压力板/管道），重新生成，避免读档重复
-	for node in get_tree().get_nodes_in_group("doors") + get_tree().get_nodes_in_group("pressure_plates") + get_tree().get_nodes_in_group("power_pipes"):
+	for node in get_tree().get_nodes_in_group("doors") + get_tree().get_nodes_in_group("pressure_plates") \
+		+ get_tree().get_nodes_in_group("power_pipes") + get_tree().get_nodes_in_group("keypad_locks") \
+		+ get_tree().get_nodes_in_group("relic_devices") + get_tree().get_nodes_in_group("twin_altars"):
 		node.free()
 	for node in get_tree().get_nodes_in_group("portals"):
 		node.free()
@@ -186,6 +202,7 @@ func generate(seed_value: int, saved_resources: Array = [], saved_pipes: Array =
 	_place_lairs()      # 登记所有群系 Boss 巢穴的占用矩形（资源/结构避让）
 	_place_landmarks()  # 先登记巢穴，再定地标：谜题/聚集地/传送门都要避开巢穴（否则路网可能被巢穴切断）
 	_build_puzzles(saved_resources.is_empty())  # 全新开局才放房间奖励，读档从存档恢复
+	_build_relic_puzzles(saved_resources.is_empty())  # 解谜扩展：遗迹密室 + 双子机关碑
 	_build_portal()
 	_build_boss_hub()
 	_build_lairs()      # 先建巢穴，再修路（路网绕开巢穴围墙，只从正门通道接入）
@@ -208,6 +225,8 @@ func generate(seed_value: int, saved_resources: Array = [], saved_pipes: Array =
 		if all_connected:
 			for p in _pipes:
 				p.mark_solved()
+	# 恢复谜题进度（密码锁/遗迹装置/双子碑），已解的不会重置、不重复发奖
+	_restore_puzzle_states(saved_puzzles)
 
 
 ## 在地图上随机放一个通往地心世界的传送门（避开出生点和谜题）
@@ -243,8 +262,25 @@ func _place_landmarks() -> void:
 	rng.seed = map_seed + 999
 	puzzle_anchor = _pick_puzzle_anchor(rng)
 	puzzle_cells = _compute_puzzle_cells(puzzle_anchor)
+	relic_anchor = _pick_relic_anchor(rng)
+	puzzle_cells.append_array(_compute_relic_cells(relic_anchor))
+	var altars: Array = _pick_altar_cells(rng)
+	altar_a_cell = altars[0]
+	altar_b_cell = altars[1]
+	puzzle_cells.append_array(_compute_altar_cells(altar_a_cell, altar_b_cell))
 	hub_cell = _pick_hub_cell(rng)
 	portal_cell = _portal_cell(rng)
+	# 谜题内容由世界种子决定：读档重建时生成同一把锁、同一串符文
+	_relic_code = "%03d" % (absi(map_seed) % 1000)
+	var seq_rng := RandomNumberGenerator.new()
+	seq_rng.seed = map_seed + 557
+	_relic_sequence = [0, 1, 2, 3]
+	# Fisher-Yates 洗牌：用种子 RNG 保证同一世界种子生成同一序列（读档可复现）
+	for i in range(_relic_sequence.size() - 1, 0, -1):
+		var j := seq_rng.randi_range(0, i)
+		var tmp: int = _relic_sequence[i]
+		_relic_sequence[i] = _relic_sequence[j]
+		_relic_sequence[j] = tmp
 
 
 ## 在普通地表内、离出生点 12~18 格处选压力板密室的锚点（左上角）
@@ -268,7 +304,7 @@ func _valid_puzzle_anchor(anchor: Vector2i) -> bool:
 	# 房间不能压到出生点安全区
 	for y in range(anchor.y, anchor.y + PUZZLE_SIZE.y):
 		for x in range(anchor.x, anchor.x + PUZZLE_SIZE.x):
-			if _is_spawn_safe(Vector2i(x, y)):
+			if _is_spawn_safe_box(Vector2i(x, y)):
 				return false
 	# 房间中心必须在普通地表区域
 	var center := anchor + Vector2i(PUZZLE_SIZE.x / 2, PUZZLE_SIZE.y / 2)
@@ -292,6 +328,80 @@ func _compute_puzzle_cells(anchor: Vector2i) -> Array[Vector2i]:
 		cells.append(anchor + off)
 	cells.append(anchor + PLATE_OFFSET)
 	return cells
+
+
+## 遗迹密室锚点：普通地表内、离出生点 22~34 格、避开压力板谜题与巢穴
+func _pick_relic_anchor(rng: RandomNumberGenerator) -> Vector2i:
+	for attempt in 120:
+		var angle := rng.randf() * TAU
+		var dist := rng.randf_range(RELIC_MIN_DIST, RELIC_MAX_DIST)
+		var anchor := SPAWN_CELL + Vector2i(round(cos(angle) * dist), round(sin(angle) * dist))
+		if _valid_relic_anchor(anchor):
+			return anchor
+	return SPAWN_CELL + Vector2i(24, 14)  # 兜底：出生点东南（仍在普通地表）
+
+
+func _valid_relic_anchor(anchor: Vector2i) -> bool:
+	if anchor.x < 5 or anchor.y < 5:
+		return false
+	if anchor.x + RELIC_ROOM_SIZE.x > MAP_W - 4 or anchor.y + RELIC_ROOM_SIZE.y > MAP_H - 4:
+		return false
+	for cell2 in _compute_relic_cells(anchor):
+		if _is_spawn_safe(cell2) or _is_reserved_cell(cell2):
+			return false
+	var center := anchor + Vector2i(RELIC_ROOM_SIZE.x / 2, RELIC_ROOM_SIZE.y / 2)
+	if not BiomeDefs.is_surface(BiomeDefs.get_biome_at(center, map_seed)):
+		return false
+	return true
+
+
+func _compute_relic_cells(anchor: Vector2i) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	for y in range(anchor.y, anchor.y + RELIC_ROOM_SIZE.y):
+		for x in range(anchor.x, anchor.x + RELIC_ROOM_SIZE.x):
+			cells.append(Vector2i(x, y))
+	for off in RELIC_DOORWAY_OFFSETS:
+		cells.append(anchor + off)
+	return cells
+
+
+## 双子碑位置：遗迹密室附近两块空地（间距 ≥5 格），A 先激活、B 后激活
+func _pick_altar_cells(rng: RandomNumberGenerator) -> Array:
+	for attempt in 80:
+		var a := relic_anchor + Vector2i(rng.randi_range(-9, 9), rng.randi_range(-6, 6))
+		if not _valid_altar_cell(a):
+			continue
+		for attempt2 in 40:
+			var b := relic_anchor + Vector2i(rng.randi_range(-9, 9), rng.randi_range(-6, 6))
+			if a == b or Vector2(b - a).length() < 5.0:
+				continue
+			if _valid_altar_cell(b):
+				return [a, b]
+	return [relic_anchor + Vector2i(-6, 2), relic_anchor + Vector2i(8, 4)]
+
+
+func _valid_altar_cell(cell: Vector2i) -> bool:
+	if cell.x < 3 or cell.y < 3 or cell.x >= MAP_W - 3 or cell.y >= MAP_H - 3:
+		return false
+	if _is_spawn_safe(cell) or _is_reserved_cell(cell):
+		return false
+	if not BiomeDefs.is_surface(BiomeDefs.get_biome_at(cell, map_seed)):
+		return false
+	# 双子碑要和遗迹密室保持 ≥2 格间距：路网终点在石碑旁边一格，
+	# 若石碑贴着密室墙，终点会落在墙上导致 A* 无法到达
+	var relic_cells := _compute_relic_cells(relic_anchor)
+	for dx in range(-1, 2):
+		for dy in range(-1, 2):
+			if relic_cells.has(cell + Vector2i(dx, dy)):
+				return false
+	var atlas := _ground.get_cell_atlas_coords(cell)
+	if atlas == STONE_TILE or atlas == WATER_TILE or atlas == LAVA_TILE:
+		return false
+	return true
+
+
+func _compute_altar_cells(a: Vector2i, b: Vector2i) -> Array[Vector2i]:
+	return [a, b]
 
 
 ## 聚集地：普通地表深处（离出生点 ≥20 格、离谜题 ≥12 格）的独立竞技场
@@ -471,6 +581,9 @@ func _build_roads() -> void:
 		[SPAWN_CELL + Vector2i(0, 2), puzzle_anchor + DOORWAY_OFFSETS[0] + Vector2i(-1, 0)],  # 出生点营地南出口 → 谜题门口
 		[puzzle_anchor + DOORWAY_OFFSETS[0] + Vector2i(-1, 0), hub_cell + Vector2i(0, 2)],     # 谜题门口 → 聚集地边缘
 		[hub_cell + Vector2i(0, 2), portal_cell],                                             # 聚集地边缘 → 传送门（世界枢纽）
+		[SPAWN_CELL + Vector2i(0, 2), relic_anchor + Vector2i(2, -2)],                        # 出生点 → 遗迹密室门口
+		[relic_anchor + Vector2i(2, -2), altar_a_cell + Vector2i(1, 0)],                      # 密室 → 石碑 A
+		[altar_a_cell + Vector2i(1, 0), altar_b_cell + Vector2i(1, 0)],                       # 石碑 A → 石碑 B
 	]
 	for l in LAIR_DEFS:
 		var c: Vector2i = l["center"]
@@ -1098,6 +1211,86 @@ func _build_puzzles(with_rewards: bool) -> void:
 		_pipes.append(pipe)
 
 
+## 解谜扩展：遗迹密室（密码锁 + 遗迹装置 联动）与双子机关碑（联动谜题 2）
+func _build_relic_puzzles(with_rewards: bool) -> void:
+	_build_relic_chamber(with_rewards)
+	_build_twin_altars()
+
+
+## 遗迹密室：7×6 石墙房间，北墙门洞装门；屋内是遗迹装置 + 密码锁
+func _build_relic_chamber(with_rewards: bool) -> void:
+	var anchor := relic_anchor
+	# 石墙围合的密室，地面铺符文石板
+	for y in range(anchor.y, anchor.y + RELIC_ROOM_SIZE.y):
+		for x in range(anchor.x, anchor.x + RELIC_ROOM_SIZE.x):
+			var cell := Vector2i(x, y)
+			var is_border := x == anchor.x or x == anchor.x + RELIC_ROOM_SIZE.x - 1 \
+				or y == anchor.y or y == anchor.y + RELIC_ROOM_SIZE.y - 1
+			_ground.set_cell(cell, 0, STONE_TILE if is_border else RUNE_TILE)
+	# 北墙门洞（2 列 × 3 行）+ 门外 2 行清地
+	for off in RELIC_DOORWAY_OFFSETS:
+		_ground.set_cell(anchor + off, 0, GRASS_TILE)
+	for x in range(anchor.x + 1, anchor.x + RELIC_ROOM_SIZE.x - 1):
+		for y in range(anchor.y - 2, anchor.y):
+			_ground.set_cell(Vector2i(x, y), 0, GRASS_TILE)
+	# 门：盖住北墙门洞（与压力板密室同一门模板）
+	var door: StaticBody2D = DOOR_SCENE.instantiate()
+	var door_cell := anchor + Vector2i(2, 0)
+	door.global_position = Vector2(door_cell.x * TILE_SIZE + TILE_SIZE, door_cell.y * TILE_SIZE + 16)
+	add_child(door)
+	# 密码锁：南墙内侧（玩家站在屋内按 E 交互）
+	var keypad: Node2D = KEYPAD_SCENE.instantiate()
+	keypad.code = _relic_code
+	keypad.linked_door = door
+	keypad.global_position = Vector2((anchor.x + RELIC_ROOM_SIZE.x / 2) * TILE_SIZE + 16, (anchor.y + RELIC_ROOM_SIZE.y - 1) * TILE_SIZE + 16)
+	add_child(keypad)
+	# 遗迹装置：房间中央偏西，4 个符文环绕
+	var device: Node2D = RELIC_SCENE.instantiate()
+	device.sequence = _relic_sequence.duplicate()
+	device.linked_keypad = keypad
+	device.global_position = Vector2((anchor.x + 2) * TILE_SIZE + 16, (anchor.y + 3) * TILE_SIZE + 16)
+	add_child(device)
+	# 房间内小奖励（仅全新开局）
+	if with_rewards:
+		_spawn_resource(anchor + Vector2i(4, 2), "rune_stone", "符文石", 1, 2, Color(0.55, 0.7, 0.85))
+		_spawn_resource(anchor + Vector2i(4, 3), "parts", "零件", 1, 2, Color(0.8, 0.7, 0.35))
+
+
+## 双子机关碑：两座石碑（A 先 B 后），周围清成草地当平台
+func _build_twin_altars() -> void:
+	var a: Node2D = ALTAR_SCENE.instantiate()
+	a.is_first = true
+	a.global_position = Vector2(altar_a_cell) * TILE_SIZE + Vector2(16, 16)
+	add_child(a)
+	var b: Node2D = ALTAR_SCENE.instantiate()
+	b.is_first = false
+	b.global_position = Vector2(altar_b_cell) * TILE_SIZE + Vector2(16, 16)
+	add_child(b)
+	a.partner = b
+	b.partner = a
+	for cell in [altar_a_cell, altar_b_cell]:
+		for dx in range(-1, 2):
+			for dy in range(-1, 2):
+				_ground.set_cell(cell + Vector2i(dx, dy), 0, GRASS_TILE)
+
+
+## 读档恢复谜题进度：已解的锁/装置/石碑保持解开，不重复发奖
+func _restore_puzzle_states(saved_puzzles: Array) -> void:
+	for state in saved_puzzles:
+		match str(state.get("type", "")):
+			"keypad":
+				for k in get_tree().get_nodes_in_group("keypad_locks"):
+					k.apply_state(state)
+					break
+			"relic":
+				for r in get_tree().get_nodes_in_group("relic_devices"):
+					r.apply_state(state)
+					break
+			"altar":
+				for a in get_tree().get_nodes_in_group("twin_altars"):
+					a.apply_state(state)
+
+
 ## 读档时按存档列表恢复资源（采集过的不会复活）
 func _spawn_saved_resources(saved: Array) -> void:
 	for r in saved:
@@ -1125,6 +1318,13 @@ func _spawn_resource(cell: Vector2i, id: String, display_name: String, min_amt: 
 
 func _is_spawn_safe(cell: Vector2i) -> bool:
 	return Vector2(cell - SPAWN_CELL).length() < float(SPAWN_SAFE_RADIUS)
+
+
+## 出生安全区方形判定：与 _build_spawn_safe_zone 清出的草地范围一致。
+## 圆形判定（_is_spawn_safe）允许房间墙侵入方形角落（如 (92,82) 距出生点 10.6 格，
+## 在圆形外但在方形内），导致安全区角落出现石头。
+func _is_spawn_safe_box(cell: Vector2i) -> bool:
+	return absi(cell.x - SPAWN_CELL.x) <= SPAWN_SAFE_RADIUS and absi(cell.y - SPAWN_CELL.y) <= SPAWN_SAFE_RADIUS
 
 
 ## 谜题占用的格子：随机资源不要刷进去

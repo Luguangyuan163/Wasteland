@@ -1,0 +1,88 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/relic_device.gd" id="1_relic"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_node"]
+radius = 20.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_area"]
+size = Vector2(96, 96)
+
+[node name="RelicDevice" type="Node2D" groups=["relic_devices"]]
+script = ExtResource("1_relic")
+
+[node name="Base" type="Polygon2D" parent="."]
+color = Color(0.38, 0.34, 0.42, 1)
+polygon = PackedVector2Array(-56, -36, 56, -36, 56, 36, -56, 36)
+
+[node name="Status" type="Label" parent="."]
+offset_left = -110.0
+offset_top = 40.0
+offset_right = 110.0
+offset_bottom = 62.0
+theme_override_colors/font_color = Color(0.85, 0.8, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "遗迹装置（按 E 启动）"
+horizontal_alignment = 1
+
+[node name="Nodes" type="Node2D" parent="."]
+
+[node name="Node0" type="Area2D" parent="Nodes"]
+input_pickable = true
+position = Vector2(-48, 0)
+
+[node name="Visual" type="Polygon2D" parent="Nodes/Node0"]
+color = Color(0.35, 0.35, 0.45, 1)
+polygon = PackedVector2Array(0, -18, 18, 0, 0, 18, -18, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Nodes/Node0"]
+shape = SubResource("CircleShape2D_node")
+
+[node name="Node1" type="Area2D" parent="Nodes"]
+input_pickable = true
+position = Vector2(48, 0)
+
+[node name="Visual" type="Polygon2D" parent="Nodes/Node1"]
+color = Color(0.35, 0.35, 0.45, 1)
+polygon = PackedVector2Array(0, -18, 18, 0, 0, 18, -18, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Nodes/Node1"]
+shape = SubResource("CircleShape2D_node")
+
+[node name="Node2" type="Area2D" parent="Nodes"]
+input_pickable = true
+position = Vector2(0, -48)
+
+[node name="Visual" type="Polygon2D" parent="Nodes/Node2"]
+color = Color(0.35, 0.35, 0.45, 1)
+polygon = PackedVector2Array(0, -18, 18, 0, 0, 18, -18, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Nodes/Node2"]
+shape = SubResource("CircleShape2D_node")
+
+[node name="Node3" type="Area2D" parent="Nodes"]
+input_pickable = true
+position = Vector2(0, 48)
+
+[node name="Visual" type="Polygon2D" parent="Nodes/Node3"]
+color = Color(0.35, 0.35, 0.45, 1)
+polygon = PackedVector2Array(0, -18, 18, 0, 0, 18, -18, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Nodes/Node3"]
+shape = SubResource("CircleShape2D_node")
+
+[node name="InteractArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea"]
+shape = SubResource("RectangleShape2D_area")
+
+[node name="Hint" type="Label" parent="."]
+offset_left = -90.0
+offset_top = -78.0
+offset_right = 90.0
+offset_bottom = -56.0
+theme_override_colors/font_color = Color(1, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 13
+text = "按 E 启动装置"
+horizontal_alignment = 1
+visible = false

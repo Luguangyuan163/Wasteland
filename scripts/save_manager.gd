@@ -39,6 +39,7 @@ func _save_to(path: String) -> void:
 		"map_seed": _map_seed(),
 		"resources": _collect_resources(),
 		"pipes": _collect_pipes(),
+		"puzzles": _collect_puzzles(),
 		"player": {
 			"position": [player.global_position.x, player.global_position.y],
 			"hp": player.hp,
@@ -141,7 +142,7 @@ func _apply_load(data: Variant, keep_inventory: bool) -> void:
 	# 地图：用存档种子重建（含资源状态），保证读档后还是同一张图
 	var world = get_tree().current_scene
 	if world != null and world.has_method("generate"):
-		world.generate(int(data.get("map_seed", 0)), data.get("resources", []), data.get("pipes", []))
+		world.generate(int(data.get("map_seed", 0)), data.get("resources", []), data.get("pipes", []), data.get("puzzles", []))
 	# 先清掉当前场上的敌人和建筑，再按存档重建
 	_clear_entities()
 	# 背包与装备
@@ -201,6 +202,18 @@ func _collect_pipes() -> Array:
 	var list: Array = []
 	for pipe in get_tree().get_nodes_in_group("power_pipes"):
 		list.append(pipe.connected)
+	return list
+
+
+## 收集谜题进度（密码锁/遗迹装置/双子碑），读档后恢复，已解的不会重置
+func _collect_puzzles() -> Array:
+	var list: Array = []
+	for k in get_tree().get_nodes_in_group("keypad_locks"):
+		list.append({"type": "keypad", "code": k.code, "input_enabled": k.input_enabled, "revealed": k.revealed, "solved": k.solved})
+	for r in get_tree().get_nodes_in_group("relic_devices"):
+		list.append({"type": "relic", "sequence": r.sequence, "solved": r.solved})
+	for a in get_tree().get_nodes_in_group("twin_altars"):
+		list.append({"type": "altar", "solved": a.solved})
 	return list
 
 

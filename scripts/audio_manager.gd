@@ -28,6 +28,9 @@ const SFX_VOLUME_DB := {
 	"puzzle_press": -6.0,
 	"door_open": -8.0,
 	"pipe_toggle": -6.0,
+	"keypad_beep": -8.0,
+	"puzzle_ok": -6.0,
+	"puzzle_fail": -8.0,
 	"pickup": -6.0,
 	"save": -8.0,
 	"load": -8.0,
@@ -128,6 +131,9 @@ func _build_stream(id: String) -> PackedFloat32Array:
 		"puzzle_press": return _concat([_tone(rng, 520.0, 0.05, 0.32, 0.05), _tone(rng, 140.0, 0.09, 0.28, 0.10)])
 		"door_open": return _concat([_sweep(rng, 95.0, 68.0, 0.38, 0.26, 0.40), _noise(rng, 0.10, 0.14)])
 		"pipe_toggle": return _concat([_tone(rng, 700.0, 0.04, 0.28, 0.05), _tone(rng, 420.0, 0.06, 0.24, 0.05)])
+		"keypad_beep": return _concat([_tone(rng, 880.0, 0.05, 0.28, 0.05)])
+		"puzzle_ok": return _concat([_tone(rng, 659.0, 0.10, 0.26, 0.0), _tone(rng, 988.0, 0.14, 0.26, 0.0)])
+		"puzzle_fail": return _concat([_tone(rng, 150.0, 0.18, 0.30, 0.25)])
 		"pickup": return _concat([_tone(rng, 660.0, 0.06, 0.24, 0.0), _tone(rng, 990.0, 0.10, 0.24, 0.0)])
 		"save": return _concat([_tone(rng, 880.0, 0.06, 0.22, 0.0), _tone(rng, 1320.0, 0.09, 0.22, 0.0)])
 		"load": return _concat([_tone(rng, 660.0, 0.06, 0.22, 0.0), _tone(rng, 990.0, 0.09, 0.22, 0.0)])

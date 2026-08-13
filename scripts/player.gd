@@ -245,6 +245,11 @@ func _try_interact() -> void:
 	if crafting_panel != null and crafting_panel.is_open():
 		crafting_panel.close()
 		return
+	# 密码锁面板开着时再按 E = 关闭面板（和制作面板一致）
+	var keypad_panel := get_tree().get_first_node_in_group("keypad_panels")
+	if keypad_panel != null and keypad_panel.is_open():
+		keypad_panel.close()
+		return
 	# 死亡掉落包优先捡取
 	var bag := _nearest_node_in_group("death_bags", gather_radius)
 	if bag != null:
@@ -254,6 +259,21 @@ func _try_interact() -> void:
 	var pipe := _nearest_node_in_group("power_pipes", gather_radius)
 	if pipe != null:
 		pipe.toggle()
+		return
+	# 密码锁：靠近按 E 输入密码（遗迹装置激活后才有反应）
+	var keypad := _nearest_node_in_group("keypad_locks", gather_radius)
+	if keypad != null:
+		keypad.try_open()
+		return
+	# 遗迹装置：靠近按 E 启动符文序列谜题
+	var relic := _nearest_node_in_group("relic_devices", gather_radius)
+	if relic != null:
+		relic.start_attempt()
+		return
+	# 双子机关碑：靠近按 E 激活（先 A 后 B，联动谜题）
+	var altar := _nearest_node_in_group("twin_altars", gather_radius)
+	if altar != null:
+		altar.activate()
 		return
 	# 传送门：靠近按 E 进入目标世界
 	var portal := _nearest_node_in_group("portals", gather_radius)

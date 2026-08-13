@@ -1,0 +1,39 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/twin_altar.gd" id="1_altar"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_area"]
+size = Vector2(56, 48)
+
+[node name="TwinAltar" type="Node2D" groups=["twin_altars"]]
+script = ExtResource("1_altar")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(-20, -14, 20, -14, 20, 14, -20, 14)
+
+[node name="Status" type="Label" parent="."]
+offset_left = -70.0
+offset_top = 16.0
+offset_right = 70.0
+offset_bottom = 38.0
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "石碑"
+horizontal_alignment = 1
+
+[node name="InteractArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea"]
+shape = SubResource("RectangleShape2D_area")
+
+[node name="Hint" type="Label" parent="."]
+offset_left = -70.0
+offset_top = -40.0
+offset_right = 70.0
+offset_bottom = -18.0
+theme_override_colors/font_color = Color(1, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 13
+text = "按 E 激活石碑"
+horizontal_alignment = 1
+visible = false

@@ -67,7 +67,7 @@ func _process(_delta: float) -> bool:
 			str(hub_cell), BiomeDefs.get_biome_at(hub_cell, world.map_seed),
 			str(portal_cell), BiomeDefs.get_biome_at(portal_cell, world.map_seed)]
 		_log += "距离：出生点→谜题=%.1f 出生点→聚集地=%.1f 谜题→聚集地=%.1f 聚集地→传送门=%.1f\n" % [d_spawn_puzzle, d_spawn_hub, d_puzzle_hub, d_hub_portal]
-		_log += "道路格数 = %d（成功连通 %d/17 段），刷怪器聚集地同步 = %s\n" % [world._road_cells_count, world._road_segments_ok, str(hub_synced)]
+		_log += "道路格数 = %d（成功连通 %d/20 段），刷怪器聚集地同步 = %s\n" % [world._road_cells_count, world._road_segments_ok, str(hub_synced)]
 		_log += "刷怪安全区：中心同步 = %s，半径 = %.0f px，开局安全期 = %.0f 秒\n" % [str(spawn_safe_synced), spawner.spawn_safe_radius, spawner.grace_duration]
 		if d_spawn_hub < 20.0:
 			_log += "错误：聚集地离出生点太近！\n"
@@ -81,7 +81,7 @@ func _process(_delta: float) -> bool:
 			_log += "错误：刷怪器出生点安全区中心未同步！\n"
 		if world._road_cells_count <= 0:
 			_log += "错误：没有铺出道路！\n"
-		if world._road_segments_ok < 17:
+		if world._road_segments_ok < 20:
 			_log += "错误：道路未完全连通各地标！\n"
 		# 可达性：从出生点 BFS，确认玩家能走到传送门和所有巢穴
 		var reach_info := _check_reachability(world)
