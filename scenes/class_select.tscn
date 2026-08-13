@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/class_select.gd" id="1_select"]
+
+[node name="ClassSelect" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_select")
+
+[node name="CenterPanel" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="CenterPanel"]
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="CenterPanel/VBox"]
+theme_override_font_sizes/font_size = 28
+text = "选择你的职业"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CenterPanel/VBox"]
+theme_override_colors/font_color = Color(0.78, 0.78, 0.78, 1)
+theme_override_font_sizes/font_size = 14
+text = "技能点来源：击杀大Boss +2 / 小Boss +1 / 普通怪每 10 只 +1（按 K 打开技能树）"
+horizontal_alignment = 1
+
+[node name="ClassList" type="VBoxContainer" parent="CenterPanel/VBox"]
+theme_override_constants/separation = 10
+
+[node name="BackButton" type="Button" parent="CenterPanel/VBox"]
+text = "返回主菜单"

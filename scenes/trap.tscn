@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/trap.gd" id="1_trap"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_area"]
+size = Vector2(30, 30)
+
+[node name="Trap" type="Area2D" groups=["traps"]]
+script = ExtResource("1_trap")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.55, 0.55, 0.58, 1)
+polygon = PackedVector2Array(-12, 8, -6, -6, 0, 8, 5, -8, 11, 8)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_area")

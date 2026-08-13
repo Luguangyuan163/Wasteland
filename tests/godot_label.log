@@ -1,0 +1,13 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[LABEL] tyrant 位置=(4816.0, 3856.0) 标签偏移y=-14.3
+[LABEL] dark_elite 位置=(4880.0, 3920.0) 标签偏移y=-21.4
+[LABEL] husk 位置=(4720.0, 3888.0) 标签偏移y=-12.5
+[LABEL] shade 位置=(4912.0, 3824.0) 标签偏移y=0.0
+[LABEL] husk 位置=(4800.0, 3752.0) 标签偏移y=-37.5
+[LABEL] husk 位置=(4830.0, 3722.0) 标签偏移y=-12.5
+[LABEL] husk 位置=(4775.0, 3737.0) 标签偏移y=-25.0
+[LABEL] husk 位置=(4815.0, 3682.0) 标签偏移y=0.0
+[LABEL] 簇内敌人=8 全部显示名字=true 垂直错位档数=6

@@ -1,0 +1,136 @@
+== 引擎版本 ==
+4.7.1-stable (official)
+--- seed 12345 ---
+  future_wild = 8444 (28.1%)
+  dune_wastes = 906 (3.0%)
+  ice_vein = 1535 (5.1%)
+  fungal_grove = 947 (3.2%)
+  flame_city = 1475 (4.9%)
+  swamp = 976 (3.3%)
+  wasteland = 2275 (7.6%)
+  rocky = 2606 (8.7%)
+  forest = 789 (2.6%)
+  life_oasis = 826 (2.8%)
+  mech_ruins = 1313 (4.4%)
+  sky_island = 854 (2.8%)
+  dark_city = 2395 (8.0%)
+  ancient_relics = 574 (1.9%)
+  canyon = 1219 (4.1%)
+  rad_waste = 1271 (4.2%)
+  ghost_graveyard = 700 (2.3%)
+  thunder_highlands = 895 (3.0%)
+  过渡带 = 4492 格，地表 = 18.9% 暗域 = 8.0% 冰脉 = 5.1% 爆炎 = 4.9% 辐射 = 4.2% 机械 = 4.4% 沼泽 = 3.3% 峡谷 = 4.1% 天空 = 2.8% 沙丘 = 3.0% 雷鸣 = 3.0% 真菌 = 3.2% 遗迹 = 1.9% 墓园 = 2.3% 绿洲 = 2.8% 未来 = 28.1%
+  地标：出生点=wasteland 谜题=forest 聚集地=forest 暗域中心=dark_city
+--- seed 2026 ---
+  future_wild = 8868 (29.6%)
+  dune_wastes = 916 (3.1%)
+  ice_vein = 1320 (4.4%)
+  fungal_grove = 949 (3.2%)
+  flame_city = 1340 (4.5%)
+  swamp = 1010 (3.4%)
+  wasteland = 1062 (3.5%)
+  forest = 932 (3.1%)
+  rocky = 3861 (12.9%)
+  life_oasis = 841 (2.8%)
+  mech_ruins = 1193 (4.0%)
+  sky_island = 844 (2.8%)
+  dark_city = 2182 (7.3%)
+  ancient_relics = 539 (1.8%)
+  canyon = 1194 (4.0%)
+  rad_waste = 1335 (4.5%)
+  ghost_graveyard = 711 (2.4%)
+  thunder_highlands = 903 (3.0%)
+  过渡带 = 4612 格，地表 = 19.5% 暗域 = 7.3% 冰脉 = 4.4% 爆炎 = 4.5% 辐射 = 4.5% 机械 = 4.0% 沼泽 = 3.4% 峡谷 = 4.0% 天空 = 2.8% 沙丘 = 3.1% 雷鸣 = 3.0% 真菌 = 3.2% 遗迹 = 1.8% 墓园 = 2.4% 绿洲 = 2.8% 未来 = 29.6%
+  地标：出生点=rocky 谜题=rocky 聚集地=rocky 暗域中心=dark_city
+--- seed 77777 ---
+  future_wild = 8720 (29.1%)
+  dune_wastes = 920 (3.1%)
+  ice_vein = 1296 (4.3%)
+  fungal_grove = 934 (3.1%)
+  flame_city = 1389 (4.6%)
+  swamp = 1029 (3.4%)
+  wasteland = 1931 (6.4%)
+  rocky = 2929 (9.8%)
+  life_oasis = 899 (3.0%)
+  forest = 965 (3.2%)
+  mech_ruins = 1258 (4.2%)
+  sky_island = 821 (2.7%)
+  dark_city = 2254 (7.5%)
+  ancient_relics = 557 (1.9%)
+  canyon = 1146 (3.8%)
+  rad_waste = 1355 (4.5%)
+  ghost_graveyard = 721 (2.4%)
+  thunder_highlands = 876 (2.9%)
+  过渡带 = 4598 格，地表 = 19.4% 暗域 = 7.5% 冰脉 = 4.3% 爆炎 = 4.6% 辐射 = 4.5% 机械 = 4.2% 沼泽 = 3.4% 峡谷 = 3.8% 天空 = 2.7% 沙丘 = 3.1% 雷鸣 = 2.9% 真菌 = 3.1% 遗迹 = 1.9% 墓园 = 2.4% 绿洲 = 3.0% 未来 = 29.1%
+  地标：出生点=forest 谜题=forest 聚集地=forest 暗域中心=dark_city
+--- seed 424242 ---
+  future_wild = 8211 (27.4%)
+  dune_wastes = 919 (3.1%)
+  ice_vein = 1510 (5.0%)
+  fungal_grove = 916 (3.1%)
+  flame_city = 1414 (4.7%)
+  swamp = 1018 (3.4%)
+  wasteland = 2105 (7.0%)
+  rocky = 2682 (8.9%)
+  forest = 1332 (4.4%)
+  life_oasis = 885 (3.0%)
+  mech_ruins = 1315 (4.4%)
+  sky_island = 872 (2.9%)
+  dark_city = 2317 (7.7%)
+  ancient_relics = 578 (1.9%)
+  canyon = 1204 (4.0%)
+  rad_waste = 1120 (3.7%)
+  ghost_graveyard = 706 (2.4%)
+  thunder_highlands = 896 (3.0%)
+  过渡带 = 4236 格，地表 = 20.4% 暗域 = 7.7% 冰脉 = 5.0% 爆炎 = 4.7% 辐射 = 3.7% 机械 = 4.4% 沼泽 = 3.4% 峡谷 = 4.0% 天空 = 2.9% 沙丘 = 3.1% 雷鸣 = 3.0% 真菌 = 3.1% 遗迹 = 1.9% 墓园 = 2.4% 绿洲 = 3.0% 未来 = 27.4%
+  地标：出生点=wasteland 谜题=forest 聚集地=forest 暗域中心=dark_city
+--- seed 1 ---
+  future_wild = 7743 (25.8%)
+  dune_wastes = 943 (3.1%)
+  ice_vein = 1253 (4.2%)
+  fungal_grove = 978 (3.3%)
+  flame_city = 1508 (5.0%)
+  swamp = 996 (3.3%)
+  forest = 261 (0.9%)
+  wasteland = 2426 (8.1%)
+  rocky = 3649 (12.2%)
+  life_oasis = 875 (2.9%)
+  mech_ruins = 1323 (4.4%)
+  sky_island = 860 (2.9%)
+  dark_city = 2455 (8.2%)
+  ancient_relics = 574 (1.9%)
+  canyon = 1211 (4.0%)
+  rad_waste = 1278 (4.3%)
+  ghost_graveyard = 773 (2.6%)
+  thunder_highlands = 894 (3.0%)
+  过渡带 = 3944 格，地表 = 21.1% 暗域 = 8.2% 冰脉 = 4.2% 爆炎 = 5.0% 辐射 = 4.3% 机械 = 4.4% 沼泽 = 3.3% 峡谷 = 4.0% 天空 = 2.9% 沙丘 = 3.1% 雷鸣 = 3.0% 真菌 = 3.3% 遗迹 = 1.9% 墓园 = 2.6% 绿洲 = 2.9% 未来 = 25.8%
+  地标：出生点=rocky 谜题=rocky 聚集地=rocky 暗域中心=dark_city
+== 开始实例化世界场景 ==
+== 场景实例化完成，准备 add_child ==
+== add_child 完成（generate 已执行） ==
+map_seed = 810004282
+ground cells = 30000 / 30000
+resource_nodes = 802
+biome_grid size = 30000
+workbenches = 1
+enemies(surface) = 60
+谜题锚点=(86, 77)(rocky) 聚集地=(143, 85)(wasteland) 传送门=(103, 85)(rocky)
+距离：出生点→谜题=14.1 出生点→聚集地=44.1 谜题→聚集地=57.6 聚集地→传送门=40.0
+道路格数 = 1166（成功连通 17/17 段），刷怪器聚集地同步 = true
+刷怪安全区：中心同步 = true，半径 = 512 px，开局安全期 = 120 秒
+可达性：可走区域 = 75%（22389/30000 格），传送门可达 = true，巢穴门可达 = 14/14
+巢穴可达明细：["绿洲", "天空", "爆炎", "峡谷", "沼泽", "机械", "暗域", "真菌", "遗迹", "墓园", "辐射", "冰脉", "沙丘", "雷鸣"]
+巢穴门口可达：["爆炎", "绿洲", "机械", "天空", "暗域", "沼泽", "峡谷", "遗迹", "真菌", "辐射", "墓园", "冰脉", "沙丘", "雷鸣"]
+关键地点可达：["工作台", "谜题门口", "聚集地"]
+大Boss = 14/14，零件 = 37，暗石 = 15，冰晶 = 22，余烬 = 20，辐射尘 = 20，齿轮 = 18，草药 = 20，宝石 = 16，天晶 = 14
+新群系资源：盐晶 = 16，纤维 = 11，雷晶 = 15，荧光菇 = 18，孢子 = 11，符文石 = 12，古物 = 7，灵魂余烬 = 12，白骨 = 7，净水 = 11，绿洲草药 = 7
+卡在石头上的实体：资源=0 怪物=0 建筑/机关=0
+边界石墙完整 = true
+出生安全区纯净 = true
+== 已用同一种子重新生成，等待帧结算 ==
+同种子再生一致性 = true
+== 开始实例化地心世界 ==
+== 地心世界 add_child 完成 ==
+underworld ground cells = 720 / 720
+underworld enemies = 4
+== 全部验证完成 ==

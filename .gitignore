@@ -1,0 +1,6 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# 构建产物（第 12 周 Demo 打包输出）
+/exports/

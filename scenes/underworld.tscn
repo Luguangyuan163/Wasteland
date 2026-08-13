@@ -1,0 +1,31 @@
+[gd_scene format=4 load_steps=6]
+
+[ext_resource type="PackedScene" uid="uid://bchsj8dmbvvr3" path="res://scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="3_hud"]
+[ext_resource type="Script" path="res://scripts/underworld.gd" id="4_under"]
+[ext_resource type="Script" path="res://scripts/spawn_manager.gd" id="5_spawn"]
+
+[node name="Underworld" type="Node2D"]
+script = ExtResource("4_under")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.03, 0.03, 0.05, 1)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(496, 400)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+script = ExtResource("5_spawn")
+difficulty = 3.0
+normal_types = Array[String](["dark"])
+mini_boss_type = "deep_beast"
+elite_type = "deep_elite"
+map_width = 30
+map_height = 24
+hub_center = Vector2(496, 144)
+hub_radius = 128.0
+grace_duration = 30.0
+require_darkness = false
+biome_aware = false

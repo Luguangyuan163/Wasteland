@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/death_bag.gd" id="1_bag"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_area"]
+size = Vector2(96, 96)
+
+[node name="DeathBag" type="Node2D" groups=["death_bags"]]
+script = ExtResource("1_bag")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.5, 0.35, 0.85, 1)
+polygon = PackedVector2Array(-14, -14, 14, -14, 14, 14, -14, 14)
+
+[node name="Marker" type="Polygon2D" parent="."]
+color = Color(1, 1, 1, 0.9)
+polygon = PackedVector2Array(-4, -10, 4, -10, 0, -2)
+
+[node name="InteractArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea"]
+shape = SubResource("RectangleShape2D_area")
+
+[node name="Hint" type="Label" parent="."]
+offset_left = -140.0
+offset_top = -46.0
+offset_right = 140.0
+offset_bottom = -20.0
+theme_override_colors/font_color = Color(1, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 14
+text = "按 E 拾取"
+horizontal_alignment = 1
+visible = false

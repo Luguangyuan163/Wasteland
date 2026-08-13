@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/power_pipe.gd" id="1_pipe"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_area"]
+size = Vector2(48, 48)
+
+[node name="PowerPipe" type="Node2D" groups=["power_pipes"]]
+script = ExtResource("1_pipe")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.5, 0.5, 0.5, 1)
+polygon = PackedVector2Array(-14, -14, 14, -14, 14, 14, -14, 14)
+
+[node name="Line" type="Polygon2D" parent="."]
+color = Color(0.75, 0.75, 0.75, 1)
+polygon = PackedVector2Array(-11, -3, 11, -3, 11, 3, -11, 3)
+
+[node name="InteractArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea"]
+shape = SubResource("RectangleShape2D_area")
+
+[node name="Hint" type="Label" parent="."]
+offset_left = -90.0
+offset_top = -34.0
+offset_right = 90.0
+offset_bottom = -12.0
+theme_override_colors/font_color = Color(1, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 13
+text = "按 E 转动管道"
+horizontal_alignment = 1
+visible = false

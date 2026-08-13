@@ -1,0 +1,12 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[PROBE] init children: [Inventory:<Node#26809992658>, SaveManager:<Node#31692162516>, PauseManager:<Node#33705428438>, AudioManager:<Node#33772537304>, TutorialHints:<Node#34326185443>, PlayerClass:<Node#34393294315>]
+ERROR: Can't use get_node() with absolute paths from outside the active scene tree.
+   at: get_node_or_null (scene/main/node.cpp:1910)
+   GDScript backtrace (most recent call first):
+       [0] _initialize (res://tests/probe.gd:7)
+[PROBE] init PlayerClass: <Object#null>
+[PROBE] frame children: [Inventory:<Node#26809992658>, SaveManager:<Node#31692162516>, PauseManager:<Node#33705428438>, AudioManager:<Node#33772537304>, TutorialHints:<Node#34326185443>, PlayerClass:<Node#34393294315>]
+[PROBE] frame PlayerClass: PlayerClass:<Node#34393294315>

@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://bchsj8dmbvvr3" load_steps=3]
+
+[ext_resource type="Script" uid="uid://du71h17paouc3" path="res://scripts/player.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(32, 32)
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+position = Vector2(576, 324)
+collision_mask = 3
+script = ExtResource("1_script")
+move_speed = 400.0
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+color = Color(0.9, 0.5, 0.2, 1)
+polygon = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+limit_left = 0
+limit_top = 0
+limit_right = 6400
+limit_bottom = 4800
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+texture_scale = 0.425

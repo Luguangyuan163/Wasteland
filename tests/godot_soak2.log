@@ -1,0 +1,19 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[SOAK] 前往群系：冰脉
+[SOAK] 前往群系：爆炎
+[SOAK] 前往群系：辐射
+[SOAK] 前往群系：机械
+[SOAK] 前往群系：暗域
+[SOAK] 前往群系：沼泽
+[SOAK] 前往群系：峡谷
+[SOAK] 前往群系：天空
+[SOAK] 前往群系：沙丘
+[SOAK] 前往群系：雷鸣
+[SOAK] 前往群系：真菌
+[SOAK] 前往群系：遗迹
+[SOAK] 前往群系：墓园
+[SOAK] 前往群系：绿洲
+[SOAK] 完成，总帧数=3005，怪物数=173

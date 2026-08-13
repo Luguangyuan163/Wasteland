@@ -1,0 +1,10 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[SOAK] 前往群系：冰脉
+[SOAK] 前往群系：爆炎
+[SOAK] 前往群系：辐射
+[SOAK] 前往群系：机械
+[SOAK] 前往群系：暗域
+[SOAK] 前往群系：沼泽
